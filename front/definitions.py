@@ -1,4 +1,16 @@
-FRONT_METRIC_DEFINITIONS = {
+FRONT_METRICS = [
+    "facial_width_to_height_ratio",
+    "facial_symmetry",
+    "eye_spacing_ratio",
+    "jaw_width",
+    "lip_ratio",
+    "nose_width_ratio",
+    "brow_alignment",
+    "nose_deviation_from_centerline",
+    "eye_cant"
+]
+
+FRONT_DEFS = {
     "facial_width_to_height_ratio": {
         "title": "Facial Width to Height Ratio",
         "short_label": "Facial Width to Height Ratio",
@@ -11,6 +23,7 @@ FRONT_METRIC_DEFINITIONS = {
             "This is the vertical distance from top_stable to chin_stable divided by the horizontal distance "
             "between left_face_stable and right_face_stable."
         ),
+        "weight": 1.0,
     },
     "facial_symmetry": {
         "title": "Facial Symmetry",
@@ -24,6 +37,7 @@ FRONT_METRIC_DEFINITIONS = {
             "This is computed from the average horizontal offset of the nose tip, mouth center, and eye midpoint "
             "from the face centerline, then converted into a percentage score relative to face width."
         ),
+        "weight": 1.0,
     },
     "eye_spacing_ratio": {
         "title": "Eye Spacing Ratio",
@@ -37,6 +51,7 @@ FRONT_METRIC_DEFINITIONS = {
             "This is the horizontal distance between the left and right eye centers, divided by stable face width "
             "with the current calibration factor, then expressed as a percentage."
         ),
+        "weight": 1.0,
     },
     "jaw_width": {
         "title": "Jaw Width",
@@ -50,6 +65,7 @@ FRONT_METRIC_DEFINITIONS = {
             "This is the horizontal distance between left_jaw_stable and right_jaw_stable, multiplied by 0.95, "
             "then divided by stable face width."
         ),
+        "weight": 1.0,
     },
     "lip_ratio": {
         "title": "Lip Ratio",
@@ -63,6 +79,7 @@ FRONT_METRIC_DEFINITIONS = {
             "This is the vertical height of the lower lip divided by the vertical height of the upper lip, "
             "using the current upper and lower lip landmark pairs."
         ),
+        "weight": 1.0,
     },
     "nose_width_ratio": {
         "title": "Nose Width Ratio",
@@ -76,6 +93,7 @@ FRONT_METRIC_DEFINITIONS = {
             "This is the horizontal distance between the current nose-width anchor points, multiplied by 0.88, "
             "then divided by stable face width."
         ),
+        "weight": 1.0,
     },
     "brow_alignment": {
         "title": "Brow Alignment",
@@ -89,6 +107,7 @@ FRONT_METRIC_DEFINITIONS = {
             "This is based on the vertical difference between left_brow_mid and right_brow_mid, normalized by face height, "
             "then converted into a percentage score."
         ),
+        "weight": 1.0,
     },
     "nose_deviation_from_centerline": {
         "title": "Nose Deviation from Centerline",
@@ -102,6 +121,7 @@ FRONT_METRIC_DEFINITIONS = {
             "This is the horizontal distance between the nose tip and the face centerline, "
             "divided by stable face width with the current scaling factor, then expressed as a percentage."
         ),
+        "weight": 1.0,
     },
     "eye_cant": {
         "title": "Eye Cant",
@@ -115,5 +135,6 @@ FRONT_METRIC_DEFINITIONS = {
             "This is the vertical difference between the right and left eye centers, "
             "divided by stable face width, then expressed as a percentage."
         ),
+        "weight": 1.0,
     },
 }
