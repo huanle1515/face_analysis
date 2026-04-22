@@ -1,3 +1,13 @@
+SIDE_METRICS = [
+    "chin_projection",
+    "facial_convexity",
+    "nasolabial_angle",
+    "jaw_projection",
+    "neck_chin_angle",
+    "nose_projection",
+    "lip_position",
+]
+
 SIDE_DEFS = {
     "chin_projection": {
         "rank": 1,
@@ -10,11 +20,7 @@ SIDE_DEFS = {
         "scale_max": 0.16,
         "scale_min_display": "0.00",
         "scale_max_display": "0.16",
-        "about": (
-            "This measures the straight-line distance between the stabilized subnasale point "
-            "and the stabilized chin point, normalized by profile height. It is a 2D distance ratio "
-            "based on the side photo."
-        ),
+        "about": "Horizontal chin projection relative to total profile height, using a stabilized soft-tissue chin estimate. This is a normalized 2D ratio, not a real-world millimeter measurement.",
         "weight": 1.0,
     },
     "facial_convexity": {
@@ -28,10 +34,7 @@ SIDE_DEFS = {
         "scale_max": 180.0,
         "scale_min_display": "148",
         "scale_max_display": "180",
-        "about": (
-            "This is the angle formed by the stabilized glabella point, the stabilized subnasale point, "
-            "and the stabilized chin point. It measures the profile angle at subnasale in the side view."
-        ),
+        "about": "Angle describing profile convexity from glabella through subnasale to chin.",
         "weight": 1.2,
     },
     "nasolabial_angle": {
@@ -45,11 +48,7 @@ SIDE_DEFS = {
         "scale_max": 125.0,
         "scale_min_display": "75",
         "scale_max_display": "125",
-        "about": (
-            "This is the angle formed by the stabilized nasal-base reference point, the stabilized subnasale point, "
-            "and the stabilized upper-lip reference point. It measures the angle at subnasale using the current "
-            "stabilized nose-base and upper-lip construction."
-        ),
+        "about": "Angle between the stabilized nasal-base direction and the stabilized upper-lip direction.",
         "weight": 0.95,
     },
     "jaw_projection": {
@@ -63,11 +62,7 @@ SIDE_DEFS = {
         "scale_max": 1.60,
         "scale_min_display": "0.35",
         "scale_max_display": "1.60",
-        "about": (
-            "This is the ratio of chin_projection to normalized nose width in the side view. "
-            "Specifically, it divides the normalized subnasale-to-chin distance by the normalized "
-            "horizontal nose-tip-to-subnasale distance."
-        ),
+        "about": "Relative chin-to-nose projection balance in 2D profile space. This is a bounded projection-balance ratio, not a true skeletal jaw measurement.",
         "weight": 0.95,
     },
     "neck_chin_angle": {
@@ -81,11 +76,7 @@ SIDE_DEFS = {
         "scale_max": 140.0,
         "scale_min_display": "85",
         "scale_max_display": "140",
-        "about": (
-            "This is the angle formed by the stabilized neck point, the stabilized chin point, "
-            "and the stabilized subnasale point. It measures the angle at the chin using those "
-            "three current side-profile landmarks."
-        ),
+        "about": "Angle formed by a stabilized neck point, chin, and subnasale. This metric remains more pose-sensitive than the other profile metrics.",
         "weight": 0.8,
     },
     "nose_projection": {
@@ -99,11 +90,7 @@ SIDE_DEFS = {
         "scale_max": 1.00,
         "scale_min_display": "0.35",
         "scale_max_display": "1.00",
-        "about": (
-            "This is the horizontal distance between the nose tip and the stabilized subnasale point "
-            "divided by their full straight-line distance. It measures how horizontally oriented that "
-            "nose-tip to subnasale segment is in the side photo."
-        ),
+        "about": "Horizontal nasal projection proxy based on nose tip and subnasale.",
         "weight": 1.1,
     },
     "lip_position": {
@@ -117,11 +104,7 @@ SIDE_DEFS = {
         "scale_max": 0.035,
         "scale_min_display": "-0.050",
         "scale_max_display": "0.035",
-        "about": (
-            "This is the signed perpendicular distance from the stabilized lower-lip point "
-            "to the line between the nose tip and the stabilized chin point, normalized by profile height. "
-            "Positive and negative values depend on which side of that reference line the lower lip falls."
-        ),
+        "about": "Signed lower-lip position relative to the E-line, normalized by total profile height.",
         "weight": 0.95,
     },
 }
