@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Face Harmony System</title>
+  <style>
+    :root{
+      --bg:#f6f3ef;
+      --panel:#ffffff;
+      --line:#e7ddd2;
+      --text:#1f2430;
+      --muted:#958f88;
+      --teal:#2e8d93;
+      --teal-soft:#e7f3f4;
+      --red:#b35a66;
+      --amber:#c89067;
+      --ref:#ffffff;
+      --construction:#d7d0c9;
+      --chip:#4ec9d0;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1420px;margin:0 auto;padding:18px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}
+    .title{font-size:24px;font-weight:900}
+    .actions{display:flex;gap:10px}
+    .btn,.tab{
+      border:none;border-radius:16px;padding:12px 18px;font-weight:800;cursor:pointer
+    }
+    .btn{background:#0d1b35;color:#fff}
+    .tab{background:#e8e3dc;color:#333}
+    .tab.active{background:#cfe7e8;color:#0d4750}
+    #fileInput{display:none}
+
+    .layout{display:grid;grid-template-columns:330px 1fr;gap:18px}
+    .sidebar,.main{background:var(--panel);border:1px solid var(--line);border-radius:26px}
+    .sidebar{padding:18px;height:calc(100vh - 80px);position:sticky;top:18px;overflow:auto}
+    .main{padding:18px}
+
+    .hero{display:grid;grid-template-columns:1fr auto;gap:16px;padding:18px;border:1px solid var(--line);border-radius:22px;background:#fbf9f6}
+    .hero h2{margin:0 0 6px 0;font-size:22px}
+    .hero p{margin:0;color:var(--muted);line-height:1.45}
+    .score{text-align:right}
+    .score .num{font-size:44px;font-weight:900;color:var(--teal);line-height:1}
+    .score .lbl{margin-top:8px;color:#5d946b;font-weight:800}
+
+    .metric-list{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+    .metric{padding:14px;border:1px solid var(--line);border-radius:18px;background:#fff;cursor:pointer}
+    .metric.active{outline:2px solid #bfd7d9;background:#fcffff}
+    .metric .row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .metric h4{margin:0;font-size:15px}
+    .metric .status{margin-top:4px;color:var(--muted);font-size:13px}
+    .metric .value{font-weight:900;color:var(--teal);font-size:18px;white-space:nowrap}
+    .mini-track{height:8px;border-radius:999px;position:relative;margin-top:10px;background:linear-gradient(90deg,var(--red),#cb9d7e,#79aa8d,var(--teal),#79aa8d,#cb9d7e,var(--red))}
+    .mini-thumb{width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:50%;transform:translate(-50%,-50%);box-shadow:0 3px 10px rgba(0,0,0,.12)}
+
+    .notes{margin-top:16px;color:var(--muted);font-size:13px;line-height:1.6}
+    .empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px}
+
+    .metric-header{text-align:center;margin-bottom:12px}
+    .metric-header h3{margin:0;font-size:21px}
+    .metric-header .rank{margin-top:4px;color:var(--muted)}
+
+    .detail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+    .detail-card{padding:16px;border:1px solid var(--line);border-radius:20px;background:#fbfaf8}
+    .detail-card .small{font-size:12px;color:#a58f78;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+    .detail-card .big{font-size:22px;font-weight:900}
+    .detail-card.score-card{background:#eef7f7}
+    .pill{display:inline-block;padding:5px 10px;border-radius:999px;background:#f3e5d7;color:#ba7c4f;font-size:12px;margin-top:8px}
+
+    .range-card{padding:18px 16px;border:1px solid var(--line);border-radius:20px;background:#fbfaf8;margin-bottom:18px}
+    .range-track{height:12px;border-radius:999px;position:relative;background:linear-gradient(90deg,var(--red),#cb9d7e,#79aa8d,var(--teal),#79aa8d,#cb9d7e,var(--red))}
+    .ideal-band{position:absolute;top:0;height:100%;background:rgba(255,255,255,.18);border-left:2px solid rgba(255,255,255,.7);border-right:2px solid rgba(255,255,255,.7)}
+    .marker{
+      position:absolute;top:-34px;transform:translateX(-50%);
+      background:var(--teal);color:#fff;font-weight:900;font-size:13px;
+      padding:6px 10px;border-radius:9px
+    }
+    .marker:after{
+      content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:-6px;
+      border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid var(--teal)
+    }
+    .range-caption{text-align:center;color:#b29a7c;font-size:12px;margin-top:8px}
+    .range-meta{display:flex;justify-content:space-between;margin-top:10px;color:#a9a197;font-size:12px}
+
+    .content-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}
+    .image-card,.about-card{border:1px solid var(--line);border-radius:22px;background:#fbfaf8}
+    .image-card{padding:18px}
+    .image-wrap{
+      position:relative;display:flex;align-items:center;justify-content:center;
+      min-height:520px;background:#ece6df;border-radius:18px;overflow:hidden
+    }
+    #baseImage{max-width:100%;max-height:760px;display:block}
+    #overlayCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+    .about-card{padding:18px}
+    .section-title{color:#b7aea4;font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}
+    .about-text{font-size:16px;line-height:1.7;color:#39424c}
+
+    @media (max-width:1100px){
+      .layout{grid-template-columns:1fr}
+      .sidebar{height:auto;position:static}
+      .detail-grid{grid-template-columns:1fr}
+      .content-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">Face Harmony System</div>
+      <div class="actions">
+        <button class="tab active" data-mode="front">Front Analysis</button>
+        <button class="tab" data-mode="side">Side Analysis</button>
+        <label class="btn" for="fileInput">Upload image</label>
+        <input id="fileInput" type="file" accept="image/*" />
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="hero">
+          <div>
+            <h2 id="heroTitle">Front Harmony</h2>
+            <p id="heroDesc">Detail-view prototype with derived landmarks and improved overlays.</p>
+          </div>
+          <div class="score">
+            <div id="overallScore" class="num">--</div>
+            <div id="overallLabel" class="lbl">Waiting</div>
+          </div>
+        </div>
+
+        <div id="metricList" class="metric-list"></div>
+        <div id="notes" class="notes"></div>
+      </aside>
+
+      <main class="main">
+        <div id="emptyState" class="empty">
+          Upload a front or side portrait. Then click a metric from the left to inspect its value, ideal range, score, detailed explanation, and measurement overlay.
+        </div>
+
+        <div id="detailView" style="display:none;">
+          <div class="metric-header">
+            <h3 id="detailName">Metric Name</h3>
+            <div id="detailRank" class="rank">1/16</div>
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-card">
+              <div class="small">Your Value</div>
+              <div id="yourValue" class="big">--</div>
+              <div id="yourStatus" class="pill">--</div>
+            </div>
+            <div class="detail-card">
+              <div class="small">Ideal Range</div>
+              <div id="idealRange" class="big" style="color:var(--teal)">--</div>
+            </div>
+            <div class="detail-card score-card">
+              <div class="small">Score</div>
+              <div id="metricScore" class="big" style="color:var(--teal)">--</div>
+            </div>
+          </div>
+
+          <div class="range-card">
+            <div class="range-track">
+              <div id="idealBand" class="ideal-band"></div>
+              <div id="marker" class="marker">--</div>
+            </div>
+            <div id="idealCaption" class="range-caption">ideal: --</div>
+            <div class="range-meta">
+              <span id="scaleMin">--</span>
+              <span id="scaleMax">--</span>
+            </div>
+          </div>
+
+          <div class="content-grid">
+            <div class="image-card">
+              <div class="image-wrap">
+                <img id="baseImage" alt="Analysis Image" />
+                <canvas id="overlayCanvas"></canvas>
+              </div>
+            </div>
+            <div class="about-card">
+              <div class="section-title">About This Ratio</div>
+              <div id="aboutText" class="about-text"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const tabs = [...document.querySelectorAll(".tab")];
+    const fileInput = document.getElementById("fileInput");
+    const metricList = document.getElementById("metricList");
+    const notes = document.getElementById("notes");
+    const emptyState = document.getElementById("emptyState");
+    const detailView = document.getElementById("detailView");
+    const baseImage = document.getElementById("baseImage");
+    const canvas = document.getElementById("overlayCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let mode = "front";
+    let analysis = null;
+    let selectedMetricId = null;
+
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        tabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        mode = tab.dataset.mode;
+        resetUI();
+        document.getElementById("heroTitle").textContent = mode === "front" ? "Front Harmony" : "Side Harmony";
+      });
+    });
+
+    fileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const form = new FormData();
+      form.append("file", file);
+
+      try {
+        const res = await fetch(mode === "front" ? "/analyze/front" : "/analyze/side", {
+          method: "POST",
+          body: form
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          alert(data.error || "Analysis failed");
+          return;
+        }
+
+        analysis = data;
+        selectedMetricId = data.metrics[0]?.id || null;
+
+        document.getElementById("overallScore").textContent = `${Math.round(data.overall.score)}%`;
+        document.getElementById("overallLabel").textContent = data.overall.label;
+        notes.innerHTML = (data.notes || []).map(n => `• ${n}`).join("<br>");
+
+        baseImage.src = data.image.base_image;
+        baseImage.onload = () => {
+          canvas.width = baseImage.naturalWidth;
+          canvas.height = baseImage.naturalHeight;
+          emptyState.style.display = "none";
+          detailView.style.display = "block";
+          renderMetricList();
+          renderSelectedMetric();
+        };
+      } catch (err) {
+        alert("Something went wrong while analyzing the image.");
+      }
+    });
+
+    function resetUI() {
+      analysis = null;
+      selectedMetricId = null;
+      metricList.innerHTML = "";
+      notes.innerHTML = "";
+      detailView.style.display = "none";
+      emptyState.style.display = "block";
+      ctx.clearRect(0, 0, canvas.width || 0, canvas.height || 0);
+      baseImage.removeAttribute("src");
+      document.getElementById("overallScore").textContent = "--";
+      document.getElementById("overallLabel").textContent = "Waiting";
+    }
+
+    function renderMetricList() {
+      metricList.innerHTML = "";
+      analysis.metrics.forEach(metric => {
+        const card = document.createElement("div");
+        card.className = "metric" + (metric.id === selectedMetricId ? " active" : "");
+        const left = Math.max(0, Math.min(100, metric.summary.score_normalized));
+
+        card.innerHTML = `
+          <div class="row">
+            <div>
+              <h4>${metric.name}</h4>
+              <div class="status">${metric.summary.status}</div>
+            </div>
+            <div class="value">${metric.summary.value_display}</div>
+          </div>
+          <div class="mini-track">
+            <div class="mini-thumb" style="left:${left}%"></div>
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          selectedMetricId = metric.id;
+          renderMetricList();
+          renderSelectedMetric();
+        });
+
+        metricList.appendChild(card);
+      });
+    }
+
+    function renderSelectedMetric() {
+      const metric = analysis.metrics.find(m => m.id === selectedMetricId);
+      if (!metric) return;
+
+      document.getElementById("detailName").textContent = metric.name;
+      document.getElementById("detailRank").textContent = `${metric.rank.index}/${metric.rank.total}`;
+      document.getElementById("yourValue").textContent = metric.detail.your_value.display;
+      document.getElementById("yourStatus").textContent = metric.detail.status;
+      document.getElementById("idealRange").textContent = metric.detail.ideal_range.display;
+      document.getElementById("metricScore").textContent = metric.detail.score.display;
+      document.getElementById("aboutText").textContent = metric.detail.about;
+      document.getElementById("idealCaption").textContent = `ideal: ${metric.detail.ideal_range.display}`;
+      document.getElementById("scaleMin").textContent = metric.detail.scale.min_display;
+      document.getElementById("scaleMax").textContent = metric.detail.scale.max_display;
+
+      renderScale(metric.detail.scale, metric.detail.your_value.display);
+      drawOverlay(metric.detail.overlay);
+    }
+
+    function renderScale(scale, labelText) {
+      const pct = (v) => ((v - scale.min) / (scale.max - scale.min)) * 100;
+      const idealLeft = pct(scale.ideal_min);
+      const idealWidth = pct(scale.ideal_max) - pct(scale.ideal_min);
+      const markerLeft = pct(scale.marker_value);
+
+      document.getElementById("idealBand").style.left = `${idealLeft}%`;
+      document.getElementById("idealBand").style.width = `${idealWidth}%`;
+      document.getElementById("marker").style.left = `${markerLeft}%`;
+      document.getElementById("marker").textContent = labelText;
+    }
+
+    function drawOverlay(overlay) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (!overlay || !overlay.primitives) return;
+
+      overlay.primitives.forEach(item => {
+        if (item.type === "line") drawLine(item.p1, item.p2, styleFor(item.style));
+        if (item.type === "dot") drawDot({ x: item.x, y: item.y }, styleFor(item.style));
+        if (item.type === "label") drawLabel(item.x, item.y, item.text, styleFor(item.style));
+        if (item.type === "angle") drawAngle(item, styleFor(item.style));
+        if (item.type === "segment") drawSegment(item);
+        if (item.type === "point_to_line") drawPointToLine(item);
+      });
+    }
+
+    function styleFor(name) {
+      const styles = {
+        measurement_primary: { stroke: "#58ccd2", fill: "#58ccd2", width: 3.2 },
+        reference_line: { stroke: "rgba(255,255,255,0.92)", fill: "#ffffff", width: 2.0 },
+        construction_line: { stroke: "rgba(215,208,199,0.95)", fill: "#d9d0c7", width: 1.4 },
+        endpoint_dot: { stroke: "#ffffff", fill: "#f8dede", width: 1.6, radius: 5.2 },
+        value_chip: { fill: "#59ccd2", text: "#ffffff", paddingX: 10, paddingY: 6, radius: 10, font: "700 14px Inter, system-ui, sans-serif" },
+        angle_arc: { stroke: "#59ccd2", fill: "#59ccd2", width: 2.4 },
+      };
+      return styles[name] || styles.measurement_primary;
+    }
+
+    function drawLine(p1, p2, style) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.strokeStyle = style.stroke;
+      ctx.lineWidth = style.width;
+      ctx.shadowColor = "rgba(0,0,0,.18)";
+      ctx.shadowBlur = 4;
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawDot(p, style) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.fillStyle = style.fill;
+      ctx.strokeStyle = style.stroke;
+      ctx.lineWidth = style.width;
+      ctx.arc(p.x, p.y, style.radius || 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawLabel(x, y, text, style) {
+      ctx.save();
+      ctx.font = style.font || "700 13px Inter, system-ui, sans-serif";
+      const textWidth = ctx.measureText(text).width;
+      const boxW = textWidth + (style.paddingX || 9) * 2;
+      const boxH = 30;
+      const boxX = x - boxW / 2;
+      const boxY = y - boxH / 2;
+
+      roundRect(ctx, boxX, boxY, boxW, boxH, style.radius || 8);
+      ctx.fillStyle = style.fill || "#57cdd3";
+      ctx.shadowColor = "rgba(0,0,0,.16)";
+      ctx.shadowBlur = 8;
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = style.text || "#fff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, x, y + 1);
+      ctx.restore();
+    }
+
+    function drawAngle(item, style) {
+      const a = item.a, b = item.b, c = item.c;
+
+      function shortenedPoint(from, to, length = 42) {
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const d = Math.hypot(dx, dy) || 1;
+        return {
+          x: from.x + (dx / d) * length,
+          y: from.y + (dy / d) * length,
+        };
+      }
+
+      const aShort = shortenedPoint(b, a, item.arm_length_a || 42);
+      const cShort = shortenedPoint(b, c, item.arm_length_c || 42);
+
+      drawLine(b, aShort, styleFor(item.ref_style || "reference_line"));
+      drawLine(b, cShort, styleFor(item.measure_style || "measurement_primary"));
+
+      let ang1 = Math.atan2(aShort.y - b.y, aShort.x - b.x);
+      let ang2 = Math.atan2(cShort.y - b.y, cShort.x - b.x);
+
+      while (ang2 - ang1 > Math.PI) ang2 -= Math.PI * 2;
+      while (ang1 - ang2 > Math.PI) ang1 -= Math.PI * 2;
+
+      const radius = item.radius || 24;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.strokeStyle = style.stroke;
+      ctx.lineWidth = style.width;
+      ctx.arc(b.x, b.y, radius, ang1, ang2, false);
+      ctx.stroke();
+      ctx.restore();
+
+      const mid = (ang1 + ang2) / 2;
+      const labelR = radius + 22;
+      const lx = item.label_x ?? (b.x + Math.cos(mid) * labelR);
+      const ly = item.label_y ?? (b.y + Math.sin(mid) * labelR - 2);
+
+      drawLabel(lx, ly, item.text, styleFor(item.label_style || "value_chip"));
+    }
+
+    function drawSegment(item) {
+      drawLine(item.p1, item.p2, styleFor(item.style || "measurement_primary"));
+
+      if (item.show_dots !== false) {
+        drawDot(item.p1, styleFor("endpoint_dot"));
+        drawDot(item.p2, styleFor("endpoint_dot"));
+      }
+
+      if (item.text) {
+        const lx = item.label_x ?? ((item.p1.x + item.p2.x) / 2);
+        const ly = item.label_y ?? ((item.p1.y + item.p2.y) / 2 - 18);
+        drawLabel(lx, ly, item.text, styleFor(item.label_style || "value_chip"));
+      }
+    }
+
+    function drawPointToLine(item) {
+      function lerp(a, b, t) {
+        return {
+          x: a.x + (b.x - a.x) * t,
+          y: a.y + (b.y - a.y) * t,
+        };
+      }
+
+      const point = item.point;
+      const refA = item.ref_a;
+      const refB = item.ref_b;
+
+      const t1 = item.segment_start_frac ?? 0.18;
+      const t2 = item.segment_end_frac ?? 0.80;
+
+      const segA = lerp(refA, refB, t1);
+      const segB = lerp(refA, refB, t2);
+
+      const abx = segB.x - segA.x;
+      const aby = segB.y - segA.y;
+      const ab2 = abx * abx + aby * aby || 1;
+
+      let t = ((point.x - segA.x) * abx + (point.y - segA.y) * aby) / ab2;
+      t = Math.max(0, Math.min(1, t));
+
+      const foot = {
+        x: segA.x + abx * t,
+        y: segA.y + aby * t,
+      };
+
+      drawLine(segA, segB, styleFor(item.ref_style || "reference_line"));
+      drawLine(point, foot, styleFor(item.measure_style || "measurement_primary"));
+
+      drawDot(point, styleFor("endpoint_dot"));
+      drawDot(foot, styleFor("endpoint_dot"));
+
+      const lx = item.label_x ?? ((point.x + foot.x) / 2 + 10);
+      const ly = item.label_y ?? ((point.y + foot.y) / 2 - 6);
+
+      drawLabel(lx, ly, item.text, styleFor(item.label_style || "value_chip"));
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+  </script>
+</body>
+</html>
